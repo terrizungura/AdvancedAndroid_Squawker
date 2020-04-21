@@ -22,21 +22,31 @@ import android.example.com.squawker.following.FollowingPreferenceActivity;
 import android.example.com.squawker.provider.SquawkContract;
 import android.example.com.squawker.provider.SquawkProvider;
 import android.os.Bundle;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.preference.PreferenceManager;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+
+import androidx.annotation.NonNull;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.CursorLoader;
+import 	androidx.loader.content.Loader;
+import androidx.recyclerview.widget.RecyclerView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 public class MainActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
+
 
     private static String LOG_TAG = MainActivity.class.getSimpleName();
     private static final int LOADER_ID_MESSAGES = 0;
@@ -95,12 +105,33 @@ public class MainActivity extends AppCompatActivity implements
             Log.d(LOG_TAG, "Contains: " + extras.getString("test"));
         }
 
-        // TODO (1) Make a new package for your FCM service classes called "fcm"
             // TODO (2) Create a new Service class that extends FirebaseInstanceIdService.
             // You'll need to implement the onTokenRefresh method. Simply have it print out
             // the new token.
-        // TODO (3) Here, in MainActivity, get a token using FirebaseInstanceId.getInstance().getToken()
+
+        FirebaseInstanceId.getInstance().getInstanceId()
+                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w(LOG_TAG, "getInstanceId failed", task.getException());
+                            return;
+                        }
+
+                        // Get new Instance ID token
+                        String token = task.getResult().getToken();
+
+                        // Log and toast
+                        String msg =  token;
+                        Log.d(LOG_TAG, msg);
+                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    }
+                });
         // TODO (4) Get the message from that token and print it in a log statement
+
+        String token = FirebaseInstanceId.getInstance().getToken();
+        String msg = getString(R.string.message_token_format, token);
+        Log.d(LOG_TAG, msg);
 
 
     }
